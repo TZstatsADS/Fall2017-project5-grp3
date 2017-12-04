@@ -8,9 +8,9 @@ library(dplyr)
 ```
 
 ```{r}
-train=as.data.frame(fread('/Users/linhan/Desktop/red_hat/act_train.csv'))
-test=as.data.frame(fread('/Users/linhan/Desktop/red_hat/act_test.csv'))
-people=as.data.frame(fread('/Users/linhan/Desktop/red_hat/people.csv'))
+train=as.data.frame(fread('../data/act_train.csv'))
+test=as.data.frame(fread('../data/act_test.csv'))
+people=as.data.frame(fread('../data/people.csv'))
 ```
 
 ```{r}
@@ -66,21 +66,8 @@ for (f in char.cols) {
 ```
 
 ```{r}
-write.csv(train_num_runique, "/Users/linhan/Desktop/fall2017-project5-proj5-grp3/output/train_num_runique.csv")
-write.csv(test_num_runique, "/Users/linhan/Desktop/fall2017-project5-proj5-grp3/output/test_num_runique.csv")
-```
-
-
-
-```{r}
-Y<- train_num$outcome
-train_num$outcome<- NULL
-train_num$i<- 1:dim(train_num)[1]
-set.seed(120)
-unique_p <- unique(train_num$people_id)
-valid_p  <- unique_p[sample(1:length(unique_p), 40000)]
-valid <- which(train_num$people_id %in% valid_p)
-model <- (1:length(train_num$people_id))[-valid]
+write.csv(train_num_runique, "../output/train_num_runique.csv")
+write.csv(test_num_runique, "../output/test_num_runique.csv")
 ```
 
 
