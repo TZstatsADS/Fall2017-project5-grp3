@@ -1,0 +1,45 @@
+---
+title: "Main Notebook"
+output: html_notebook
+---
+
+```{r}
+list.of.packages <- c("data.table","FeatureHashing","xgboost","dplyr","Matrix","caret","randomForest")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages))
+  {
+   install.packages(new.packages)
+  }
+```
+
+
+```{r}
+#write library
+```
+
+
+Part 1: Model Selction ######Need to train the best parameters(plz write thsi process into function)
+
+Model1: SVM
+
+Model2: Logistic Regression
+
+Model3: Random Forest
+
+Model4: GBM
+
+Model5: LightGBM
+
+Model6: Xgboost
+
+Model7: Neural Network
+
+Part 2: Feature Selection
+
+1. Feature Importance
+
+2. PCA
+
+3.Bag of words techniques
+
+Part 3: Retrain model
