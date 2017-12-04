@@ -8,9 +8,9 @@ library(dplyr)
 ```
 
 ```{r}
-train=as.data.frame(fread('/Users/linhan/Desktop/red_hat/act_train.csv'))
-test=as.data.frame(fread('/Users/linhan/Desktop/red_hat/act_test.csv'))
-people=as.data.frame(fread('/Users/linhan/Desktop/red_hat/people.csv'))
+train=as.data.frame(fread('../data/act_train.csv'))
+test=as.data.frame(fread('../data/act_test.csv'))
+people=as.data.frame(fread('../data//people.csv'))
 ```
 
 ```{r}
@@ -44,6 +44,6 @@ for (f in char.cols) {
 ```
 
 ```{r}
-write.csv(train_num, "/Users/linhan/Desktop/fall2017-project5-proj5-grp3/output/train_num.csv")
-write.csv(test_num, "/Users/linhan/Desktop/fall2017-project5-proj5-grp3/output/test_num.csv")
+write.csv(train_num, "../output/train_num.csv")
+write.csv(test_num, "../output/test_num.csv")
 ```
