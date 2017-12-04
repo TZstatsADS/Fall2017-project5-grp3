@@ -17,6 +17,13 @@ if(length(new.packages))
 #write library
 ```
 
+```{r}
+train_num<- fread("../output/train_num.csv") %>% as.data.frame()
+test_num<- fread("../output/test_num.csv") %>% as.data.frame()
+train_num_runique<- fread("../output/train_num_runique.csv") %>% as.data.frame()
+test_num<- fread("../output/test_num_runique.csv") %>% as.data.frame()
+```
+
 
 Part 1: Model Selction ######Need to train the best parameters(plz write thsi process into function)
 
