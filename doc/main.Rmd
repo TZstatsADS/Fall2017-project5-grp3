@@ -4,7 +4,7 @@ output: html_notebook
 ---
 
 ```{r}
-list.of.packages <- c("data.table","FeatureHashing","xgboost","dplyr","Matrix","caret","randomForest")
+list.of.packages <- c("data.table","FeatureHashing","xgboost","dplyr","Matrix","caret","randomForest","lightgbm","magrittr","data.table")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages))
   {
@@ -15,6 +15,10 @@ if(length(new.packages))
 
 ```{r}
 #write library
+library(lightgbm)
+library(magrittr)
+library(data.table)
+
 ```
 
 ```{r}
@@ -31,11 +35,149 @@ Model1: SVM
 
 Model2: Logistic Regression
 
-Model3: Random Forest
+Model3: Random Forest:
+
+```{r}
+
+  library(randomForest)
+
+  train_num = train_num[, !names(train_num) %in% c("V1")]
+  
+  fit <- randomForest(as.factor(outcome)~., data= train_num, mtry =4,
+                      importance=TRUE, 
+                      ntree=2000)
+  
+  rf.model = randomForest(Y~., data=trunc.totalData.rforest, subset= trainingIndex, mtry =4, importance=TRUE)
+```
+
 
 Model4: GBM
 
-Model5: LightGBM
+Model5: LightGBM:
+
+```{r}
+DT2mat <- function(DT, low_mem = FALSE, collect = 0, silent = TRUE) {
+  
+  # Can't initialize lower
+  mat_sub <- matrix(rep(FALSE, nrow(DT) * ncol(DT)), ncol = ncol(DT))
+  
+  cols <- copy(colnames(DT))
+  colnames(mat_sub) <- cols
+  
+  if (collect == 0) {
+    # Don't garbage collect
+    
+    if (low_mem == TRUE) {
+      # delete old
+      for (i in cols) {
+        mat_sub[, which(cols %in% i)] <- copy(DT[[i]])
+        set(DT, j = i, value = NULL)
+      }
+      
+    } else {
+      # not low mem
+      for (i in cols) {
+        mat_sub[, which(cols %in% i)] <- copy(DT[[i]])
+      }
+      
+    }
+    
+  } else {
+    # Do garbage collect
+    
+    if (silent == FALSE) {
+      # not silent
+      
+      if (low_mem == TRUE) {
+        # delete old
+        j <- 1
+        for (i in cols) {
+          j <- j + 1
+          mat_sub[, which(cols %in% i)] <- copy(DT[[i]])
+          set(DT, j = i, value = NULL)
+          if (!(j %% collect)) {gc(verbose = FALSE); cat("\rIteration: ", j, ".", sep = "")}
+        }
+        
+      } else {
+        # not low mem
+        j <- 0
+        for (i in cols) {
+          j <- j + 1
+          mat_sub[, which(cols %in% i)] <- copy(DT[[i]])
+          if (!(j %% collect)) {gc(verbose = FALSE); cat("\rIteration: ", j, ".", sep = "")}
+        }
+        
+      }
+      
+    } else {
+      
+      if (low_mem == TRUE) {
+        # delete old
+        j <- 1
+        for (i in cols) {
+          j <- j + 1
+          mat_sub[, which(cols %in% i)] <- copy(DT[[i]])
+          set(DT, j = i, value = NULL)
+          if (!(j %% collect)) {gc(verbose = FALSE)}
+        }
+        
+      } else {
+        # not fast
+        j <- 0
+        for (i in cols) {
+          j <- j + 1
+          mat_sub[, which(cols %in% i)] <- copy(DT[[i]])
+          if (!(j %% collect)) {gc(verbose = FALSE)}
+        }
+        
+      }
+      
+    }
+  }
+  
+  return(mat_sub)
+  
+}
+```
+
+```{r}
+
+train_num$people_id <- as.numeric(as.factor(train_num$people_id)) - 1
+train_num$activity_id <- as.numeric(as.factor(train_num$activity_id)) - 1
+train_num$date <- as.numeric(as.factor(train_num$date)) - 1
+train_num$people_date <- as.numeric(as.factor(train_num$people_date)) - 1
+train_num = train_num[, !names(train_num) %in% c("V1")]
+train_num_data= train_num[, !names(train_num) %in% c("outcome")]
+
+temp_train <- lgb.Dataset(DT2mat(train_num_data), label=train_num$outcome, free_raw_data = FALSE, colnames = colnames(train_num_data), categorical_feature = c(1, 2, 3, 18))
+
+bst <- lightgbm(data = temp_train,
+                num_leaves = 4,
+                learning_rate = 1,
+                nrounds = 2,
+                objective = "binary")
+
+pred <- predict(bst, DT2mat(train_num_data))
+err <- mean(as.numeric(pred > 0.5) != train_num$outcome)
+print(paste("test-error=", err))
+
+
+print("Training lightgbm with lgb.Dataset")
+dtrain <- lgb.Dataset(data = test_num[, !names(test_num) %in% c("V1", "outcome")],
+                      label = test_num$outcome)
+bst <- lightgbm(data = dtrain,
+                num_leaves = 4,
+                learning_rate = 1,
+                nrounds = 2,
+objective = "binary")
+
+bst <- lightgbm(data = as.matrix(train_num$data),
+                label = train$label,
+                num_leaves = 4,
+                learning_rate = 1,
+                nrounds = 2,
+objective = "binary")
+```
 
 Model6: Xgboost
 
