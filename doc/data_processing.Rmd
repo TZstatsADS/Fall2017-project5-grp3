@@ -1,0 +1,49 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(dplyr)
+```
+
+```{r}
+train=as.data.frame(fread('/Users/linhan/Desktop/red_hat/act_train.csv'))
+test=as.data.frame(fread('/Users/linhan/Desktop/red_hat/act_test.csv'))
+people=as.data.frame(fread('/Users/linhan/Desktop/red_hat/people.csv'))
+```
+
+```{r}
+names(people)[2:length(names(people))]=paste0('people_',names(people)[2:length(names(people))])
+p_logi <- names(people)[which(sapply(people, is.logical))]
+for (col in p_logi) {
+  set(people, j = col, value = as.numeric(people[[col]]))
+}
+```
+
+```{r}
+train_num <- merge(train, people, by = "people_id", all.x = T)
+test_num <- merge(test, people, by = "people_id", all.x = T)
+
+char.cols=c('activity_category','people_group_1',
+            'char_1','char_2','char_3','char_4','char_5','char_6','char_7','char_8','char_9','char_10',
+            'people_char_1','people_char_2','people_char_3','people_char_4','people_char_5','people_char_6','people_char_7','people_char_8','people_char_9')
+for (f in char.cols) {
+  if (class(train_num[[f]])=="character") {
+    levels <- unique(c(train_num[[f]]))
+    train_num[[f]] <- as.numeric(factor(train_num[[f]], levels=levels))
+  }
+}
+
+for (f in char.cols) {
+  if (class(test_num[[f]])=="character") {
+    levels <- unique(c(test_num[[f]]))
+    test_num[[f]] <- as.numeric(factor(test_num[[f]], levels=levels))
+  }
+}
+```
+
+```{r}
+write.csv(train_num, "/Users/linhan/Desktop/fall2017-project5-proj5-grp3/output/train_num.csv")
+write.csv(test_num, "/Users/linhan/Desktop/fall2017-project5-proj5-grp3/output/test_num.csv")
+```

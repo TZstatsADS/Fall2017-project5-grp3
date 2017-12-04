@@ -1,0 +1,86 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(dplyr)
+```
+
+```{r}
+train=as.data.frame(fread('/Users/linhan/Desktop/red_hat/act_train.csv'))
+test=as.data.frame(fread('/Users/linhan/Desktop/red_hat/act_test.csv'))
+people=as.data.frame(fread('/Users/linhan/Desktop/red_hat/people.csv'))
+```
+
+```{r}
+names(people)[2:length(names(people))]=paste0('people_',names(people)[2:length(names(people))])
+p_logi <- names(people)[which(sapply(people, is.logical))]
+for (col in p_logi) {
+  set(people, j = col, value = as.numeric(people[[col]]))
+}
+```
+
+```{r}
+people$people_group_1[people$people_group_1 %in% names(which(table(people$people_group_1)==1))]='group unique'
+train.unique.char_10=
+    select(train,people_id,char_10) %>% group_by(char_10) %>% 
+  summarize(n=n_distinct(people_id)) %>% 
+  filter(n==1) %>% 
+  select(char_10) %>%
+  as.matrix() %>% 
+  as.vector()
+
+test.unique.char_10=
+    select(test,people_id,char_10) %>% group_by(char_10) %>% 
+  summarize(n=n_distinct(people_id)) %>% 
+  filter(n==1) %>% 
+  select(char_10) %>%
+  as.matrix() %>% 
+  as.vector()
+
+train$char_10[train$char_10 %in% train.unique.char_10]='type unique'
+test$char_10[test$char_10 %in% train.unique.char_10]='type unique'
+```
+
+```{r}
+train_num_runique <- merge(train, people, by = "people_id", all.x = T)
+test_num_runique <- merge(test, people, by = "people_id", all.x = T)
+
+char.cols=c('activity_category','people_group_1',
+            'char_1','char_2','char_3','char_4','char_5','char_6','char_7','char_8','char_9','char_10',
+            'people_char_1','people_char_2','people_char_3','people_char_4','people_char_5','people_char_6','people_char_7','people_char_8','people_char_9')
+for (f in char.cols) {
+  if (class(train_num_runique[[f]])=="character") {
+    levels <- unique(c(train_num_runique[[f]]))
+    train_num_runique[[f]] <- as.numeric(factor(train_num_runique[[f]], levels=levels))
+  }
+}
+
+for (f in char.cols) {
+  if (class(test_num_runique[[f]])=="character") {
+    levels <- unique(c(test_num_runique[[f]]))
+    test_num_runique[[f]] <- as.numeric(factor(test_num_runique[[f]], levels=levels))
+  }
+}
+```
+
+```{r}
+write.csv(train_num_runique, "/Users/linhan/Desktop/fall2017-project5-proj5-grp3/output/train_num_runique.csv")
+write.csv(test_num_runique, "/Users/linhan/Desktop/fall2017-project5-proj5-grp3/output/test_num_runique.csv")
+```
+
+
+
+```{r}
+Y<- train_num$outcome
+train_num$outcome<- NULL
+train_num$i<- 1:dim(train_num)[1]
+set.seed(120)
+unique_p <- unique(train_num$people_id)
+valid_p  <- unique_p[sample(1:length(unique_p), 40000)]
+valid <- which(train_num$people_id %in% valid_p)
+model <- (1:length(train_num$people_id))[-valid]
+```
+
+
