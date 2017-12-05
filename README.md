@@ -3,8 +3,8 @@
 Term: Fall 2017
 
 + Team 3
-+ Projec title: Lorem ipsum dolor sit amet
-+ Team members
++ Projec title: Predicting Red Hat Business Value
++ Team membersLorem
 	+ Lin Han(lh2810)
 	+ Yajie Guo(yg2477)
 	+ Vassily Carantino(vc2434)
