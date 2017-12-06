@@ -13,33 +13,77 @@ if(length(new.packages))
 ```
 
 
-```{r}
+```{r} 
 #write library
 library(lightgbm)
 library(magrittr)
 library(data.table)
 library(randomForest)
-
+library(dplyr)
 ```
 
 ```{r}
-train_num<- fread("../output/train_num.csv") %>% as.data.frame()
+train_num<- fread("C:/Users/vc2434/Desktop/fall2017-project5-proj5-grp3-master/output/train_num.csv") %>% as.data.frame()
 test_num<- fread("../output/test_num.csv") %>% as.data.frame()
 train_num_runique<- fread("../output/train_num_runique.csv") %>% as.data.frame()
 test_num<- fread("../output/test_num_runique.csv") %>% as.data.frame()
 
 
-test = fread("/home/vassily/Desktop/Link to Fall 2017/Applied Data Science/fall2017-project5-proj5-grp3/data/act_test.csv") %>% as.data.frame()
-train = fread("/home/vassily/Desktop/Link to Fall 2017/Applied Data Science/fall2017-project5-proj5-grp3/data/act_train.csv") %>% as.data.frame()
-people = fread("/home/vassily/Desktop/Link to Fall 2017/Applied Data Science/fall2017-project5-proj5-grp3/data/people.csv") %>% as.data.frame()
+test = fread("C:/Users/vc2434/Desktop/fall2017-project5-proj5-grp3-master/data/act_test.csv") %>% as.data.frame()
+train = fread("C:/Users/vc2434/Desktop/fall2017-project5-proj5-grp3-master/data/act_train.csv") %>% as.data.frame()
+people = fread("C:/Users/vc2434/Desktop/fall2017-project5-proj5-grp3-master/data/people.csv") %>% as.data.frame()
 
 names(people)[2:length(names(people))]=paste0('people_',names(people)[2:length(names(people))])
 p_logi <- names(people)[which(sapply(people, is.logical))]
 for (col in p_logi) {
   set(people, j = col, value = as.numeric(people[[col]]))
 }
-train_agg <- merge(train, people, by = "people_id", all.x = T)
+people$people_group_1[people$people_group_1 %in% names(which(table(people$people_group_1)==1))]='group unique'
 
+
+train.unique.char_10=
+  select(train,people_id,char_10) %>% group_by(char_10) %>% 
+  summarize(n=n_distinct(people_id)) %>% 
+  filter(n==1) %>% 
+  select(char_10) %>%
+  as.matrix() %>% 
+  as.vector()
+train$char_10[train$char_10 %in% train.unique.char_10]='type unique'
+
+data <- merge(train, people, by = "people_id", all.x = T)
+data <- lapply(data,as.factor)
+data=data.frame(data)
+data$date <- as.numeric(as.POSIXct(data$date))
+data$people_date <- as.numeric(as.POSIXct(data$people_date))
+data <- data[, !names(data) %in% c("activity_id")]
+
+data$people_char_38 <- as.numeric(data$people_char_38)
+data <- data[data$people_group_1!="group 17304",]
+
+databack=data
+for (f in colnames(data)){  
+  if(length(unique(c(data[[f]])))>50){
+    levels <- unique(c(data[[f]]))
+    data[[f]] <- as.numeric(factor(data[[f]], levels=levels))
+  }
+}
+
+levels <- unique(c(data[["people_id"]]))
+data[[f]] <- as.numeric(factor(data[["people_id"]], levels=levels))
+
+
+activity1<- data[data$activity_category=="type 1",]
+activity1 <- activity1[, !names(activity1) %in% c("row.names")]
+activity1=activity1 %>% mutate_if(is.character, as.factor)
+
+data_without_activity1 <- data[data$activity_category!="type 1",]
+data_without_activity1 <- data_without_activity1[, !names(data_without_activity1) %in% c("char_1","char_2","char_3","char_4","char_5","char_6","char_7","char_8","char_9","row.names")]
+data_without_activity1=data_without_activity1 %>% mutate_if(is.character, as.factor)
+
+
+for (f in colnames(data)){
+  print(typeof(data[[f]]))
+}
 
 ```
 
@@ -53,8 +97,19 @@ Model2: Logistic Regression
 Model3: Random Forest:
 
 ```{r}
+  
+thisdata<-data_without_activity1
+sqrt(length(thisdata))
 
-  library(randomForest)
+  library(randomForest)  
+  trainingIndex=sample(nrow(thisdata), round((nrow(thisdata)*0.40)))
+  data.test=thisdata[-trainingIndex,]
+  data.train=thisdata[trainingIndex,]
+  
+  rf.model = randomForest(as.factor(outcome)~., data=thisdata, subset= trainingIndex, mtry =7, importance=TRUE)
+  importance(rf.model)  
+list(rf.model, data.test,trainingIndex)
+
 
   train_num = train_num[, !names(train_num) %in% c("V1")]
   length(train_num)
