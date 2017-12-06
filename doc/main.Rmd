@@ -76,10 +76,15 @@ From the results, we can see that the accuracy of Xgboost model is 98.94%???the 
 
 The multiple-layer neural network codes is in /doc/neural_network.ipynb. We use 5 folds cross-validation to do evaluation.
 The results are as following:
+
 CV Score         hidden layer        running time
+
 75.57%                1                 148.94s
+
 82.03%                6                 354.62s
+
 80.56%                10                1639.65s
+
 83.72%                15                4380.30s
 
 
