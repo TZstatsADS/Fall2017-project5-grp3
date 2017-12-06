@@ -1,0 +1,74 @@
+---
+title: "Main Notebook"
+output: html_notebook
+---
+
+
+###Step 0: Prepare all needed packages
+```{r}
+list.of.packages <- c("data.table","FeatureHashing","xgboost","dplyr","Matrix","caret","randomForest")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages))
+  {
+   install.packages(new.packages)
+  }
+
+library(data.table)
+library(FeatureHashing)
+library(xgboost)
+library(dplyr)
+library(Matrix)
+```
+
+###Step 1: Data processing: Turn category values into numeric values
+
+The process is in DOC file: data_processing.Rmd and data_processing_uniquea_same.Rmd ang the results is in Output links(Since the the limit size of file is 25MB)
+```{r}
+train_num<- fread("../output/train_num.csv") %>% as.data.frame()
+train_num_runique<- fread("../output/train_num_runique.csv") %>% as.data.frame()
+```
+
+###Step 1: Models
+
+
+
+```{r}
+source("/Users/linhan/Desktop/fall2017-project5-proj5-grp3/lib/xgboost.R")
+```
+
+```{r, warning=FALSE}
+run.xgb<- TRUE
+if(run.xgb){
+ system.time(xgb(train_num_runique, K=5))
+}
+```
+
+
+
+
+
+Part 1: Model Selction ######Need to train the best parameters(plz write thsi process into function)
+
+Model1: SVM
+
+Model2: Logistic Regression
+
+Model3: Random Forest
+
+Model4: GBM
+
+Model5: LightGBM
+
+Model6: Xgboost
+
+Model7: Neural Network
+
+Part 2: Feature Selection
+
+1. Feature Importance
+
+2. PCA
+
+3.Bag of words techniques
+
+Part 3: Retrain model
