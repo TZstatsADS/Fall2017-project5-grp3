@@ -1,0 +1,80 @@
+---
+title: "svm"
+output: html_document
+---
+Install necessary package
+```{r}
+install.packages('e1071', 'dplyr', 'data.table')
+library("e1071")
+library("dplyr")
+library("data.table")
+```
+
+
+```{r}
+train_num_runique <- fread("/Users/yg2477/Desktop/fall2017-project5-proj5-grp3-master/data/train_num_runique.csv") %>% as.data.frame()
+# train_num <- train_num[1:3000, ]
+# train_x <- train_num[,-c(1:4, 20)]
+# # train_x <- train_x[,-c(17)]
+#  train_x <- as.matrix(train_x)
+# model <- svm(outcome ~ ., data = train_x)
+# x <- train_x[,-13]
+# y <- train_x[,13]
+# pred <- predict(model, x)
+# accu <- sum(pred == y)/length(y)
+# accu
+```
+```{r}
+# Linear SVM starts here.
+cv_acu<-c()
+train_time <- c()
+t<- train_num_runique[ ,-c(1:4,20)]
+t<- t[1:30000, ]
+K=5
+n <- length(t$outcome)
+n.fold <- floor(n/K)
+s <- sample(rep(1:K, c(rep(n.fold, K-1), n-(K-1)*n.fold)))
+Y<- t$outcome
+t$outcome<- NULL
+for (i in 1:K){
+    train.data <- t[s!= i, ]
+    train.label <- Y[s != i]
+    test.data <- t[s == i, ]
+    test.label <- Y[s == i ]
+    time = proc.time()
+    model <- svm(x= train.data, y=train.label, kernel = 'linear' )
+    print(model)
+    pred <- predict(model, test.data )
+    cv_acu[i]<- sum(test.label == round(pred) )/ length(test.label)
+    train_time[i] = (proc.time() - time)[3]
+    
+  }			
+mean(cv_acu)
+mean(train_time)
+
+# RBF Kernel SVM starts here.
+cv_acu1<-c()
+train_time1<-c()
+for (i in 1:K){ 
+   train.data <- t[s!= i, ]
+    train.label <- Y[s != i]
+    test.data <- t[s == i, ]
+    test.label <- Y[s == i ]
+    time = proc.time()
+    model <- svm(x= train.data, y=train.label, kernel = 'radial' )
+    print(model)
+    pred1 <- predict(model, test.data )
+    cv_acu1[i]<- sum(test.label == round(pred1) )/ length(test.label)
+    train_time1[i] = (proc.time() - time)[3] 
+}	
+mean(cv_acu1)
+mean(train_time1)
+```
+
+```{r}
+svm_result <- c(cv_acu, train_time)
+rbf_result <- c(cv_acu1, train_time1)
+save(svm_result, file = "/Users/yg2477/Desktop/fall2017-project5-proj5-grp3-master/output/svm_linear.R")
+save(rbf_result, file = "/Users/yg2477/Desktop/fall2017-project5-proj5-grp3-master/output/svm_rbf.R")
+```
+
