@@ -48,7 +48,48 @@ Part 1: Model Selction ######Need to train the best parameters(plz write thsi pr
 
 Model1: SVM
 
-Model2: Logistic Regression
+Model2: Multinomial Log Linear
+
+```{r}
+library(nnet)
+multinom_data <- train_num
+
+
+#SUBSET TO RELEVANT VARIABLES
+#unfortunately, multinom() cannot handle more than 1024 categories of a variable 
+multinom_data <- subset(data,select=-c(X,people_id,activity_id,date,people_date))
+
+
+#SPLIT INTO TRAIN AND TEST
+set.seed(2017)
+multinom_index <- sample(1:nrow(multinom_data), size=0.7*nrow(multinom_data)) 
+multinom_train_data <- multinom_data[index,] 
+multinom_test_data <- multinom_data[-index,]
+
+
+#TRAIN THE MODEL + OBTAIN RUN TIME
+multinom_train <- function(multinom_train_data){
+  multinom_fit <- multinom(formula = as.factor(outcome) ~ .,
+                           data=multinom_train_data, MaxNWts = 10000, maxit = 500)
+  top_models = varImp(multinom_fit)
+  top_models$variables = row.names(top_models)
+  top_models = top_models[order(-top_models$Overall),]
+  return(list(fit=multinom_fit, top=top_models))
+}
+system.time(multinomfit_train <- multinom_train(train_data))
+
+
+#TEST THE MODEL
+multinom_test <- function(multinom_test_data, fit){
+  multinom_pred = predict(fit,newdata=multinom_test_data)
+  return(multinom_pred)
+}
+
+# run it:
+multinomtest_result = multinom_test(multinom_test_data,multinomfit_train$fit)
+postResample(multinom_test_data$outcome,multinomtest_result)
+
+
 
 Model3: Random Forest:
 
