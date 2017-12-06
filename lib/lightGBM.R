@@ -62,11 +62,17 @@ lightGBM<- function(train_num_runique){
                      activity1.dtrain,
                      1500,
                      valids = list(train = activity1.dtrain, valid = activity1.dtest))
+  ### RESULTS
+  #[1500]:	train's l2:0.0165753	valid's l2:0.0187008
+  ###
   
   activity1.end.time <- Sys.time()
   
   activity1.time.taken <- round(activity1.end.time - activity1.start.time,2)
   activity1.time.taken
+  ### RESULTS
+  #Time difference of 2.93 mins
+  ###
   
   ### Run light GBM for Activity_group !=1
   
@@ -104,10 +110,17 @@ lightGBM<- function(train_num_runique){
                      without_activity1.dtrain,
                      1500,
                      valids = list(train = without_activity1.dtrain, valid = without_activity1.dtest))
+  ### RESULTS
+  #[1500]:	train's l2:0.0264289	valid's l2:0.0285721 
+  ###
   
   without_activity1.end.time <- Sys.time()
   
   without_activity1.time.taken <- round(without_activity1.end.time - without_activity1.start.time,2)
   without_activity1.time.taken
+  ### RESULTS
+  #Time difference of 7.04 mins
+  ###
+  
   return(activity1.time.taken, without_activity1.time.taken)
 }
