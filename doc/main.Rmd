@@ -1,0 +1,94 @@
+---
+title: "Main Notebook"
+output: html_notebook
+---
+
+
+###Step 0: Prepare all needed packages
+```{r}
+list.of.packages <- c("data.table","FeatureHashing","xgboost","dplyr","Matrix","caret","randomForest","e1071","lightgbm","magrittr")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages))
+  {
+   install.packages(new.packages)
+  }
+
+library(data.table) 
+library(FeatureHashing)
+library(xgboost)
+library(dplyr)
+library(Matrix)
+library(e1071)
+library(lightgbm)
+library(magrittr)
+library(randomForest)
+```
+
+###Step 1: Data processing: Turn category values into numeric values
+
+The process is in DOC file: data_processing.Rmd and data_processing_uniquea_same.Rmd and the results is in Output links(Since the the limit size of file is 25MB)
+
+In the data processing, I converted those all values of features into numeric values, and get the results : train_num. The code is in /doc/data_processing.Rmd
+
+Since for many features, they are category values, in order to avoid the dummy variable trap, I set all frequency =1 character values in one column to be same numeric values. The code is in /doc/data_processing_uniquea_same.Rmd
+
+```{r}
+train_num<- fread("../output/train_num.csv") %>% as.data.frame()
+train_num_runique<- fread("../output/train_num_runique.csv") %>% as.data.frame()
+```
+
+######Step 2: Model Construction
+
+###Model1: SVM
+
+###Model2: Logistic Regression
+
+###Model3: Random Forest
+
+###Model4: GBM
+
+###Model5: LightGBM
+
+###Model6: Xgboost
+
+```{r}
+source("/Users/linhan/Desktop/fall2017-project5-proj5-grp3/lib/xgboost.R")
+```
+
+In order to make computation more efficiency, I convert all non-sparse columns to sparse matrix and rbind them with other sparse columns.
+
+In xgboost model, I trained the model using different parameters combinations like size of each boosting step of 0.02,0.05,0.1, maximum depth of the tree of 5,10,15. I find that when eta= 0.02, max_depth=10, the model have the highest accuracy. So I used it as the best model to do the following step---(5 folds cross-validation), and get the results:
+      
+```{r, warning=FALSE}
+run.xgb<- TRUE
+if(run.xgb){
+ system.time(xgb(train_num_runique, K=5))
+}
+####Results:
+# [100]	train-auc:0.990005+0.000024	test-auc:0.989440+0.000104 
+#     user   system  elapsed 
+#  591.506  510.861 1357.692 
+```
+
+From the results, we can see that the accuracy of Xgboost model is 98.94%???the running time is 1357.69 seconds.
+
+###Model7: Neural Network
+
+The multiple-layer neural network codes is in /doc/neural_network.ipynb. We use 5 folds cross-validation to do evaluation.
+The results are as following:
+CV Score         hidden layer        running time
+75.57%                1                 148.94s
+82.03%                6                 354.62s
+80.56%                10                1639.65s
+83.72%                15                4380.30s
+
+
+Part 2: Feature Selection
+
+1. Feature Importance
+
+2. PCA
+
+3.Bag of words techniques
+
+Part 3: Retrain model
