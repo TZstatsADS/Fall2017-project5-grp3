@@ -5,49 +5,41 @@ output: html_notebook
 
 In this project, we conducted a couple of machine learning algorithms on Red Hat Business data set, which is pretty large(almost two millions*56). We mainly compared SVM(linear and nonlinear), Random Forest, Light GBM, Xgboost, Neural Network, Multinomial log-linear Model. And it proved Xgoost and Light GBM have the highest accuracy around 98%.
 
-Step 0: Load the packages
+###Step 0: Load the packages
 ```{r}
-list.of.packages <- c("data.table","FeatureHashing","xgboost","dplyr","Matrix","caret","randomForest","lightgbm","magrittr","data.table")
+list.of.packages <- c("data.table","FeatureHashing","xgboost","dplyr","Matrix","caret","randomForest","e1071","lightgbm","magrittr")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages))
   {
    install.packages(new.packages)
   }
-```
 
-```{r}
-#write library
+library(data.table) 
+library(FeatureHashing)
+library(xgboost)
+library(dplyr)
+library(Matrix)
+library(e1071)
 library(lightgbm)
 library(magrittr)
-library(data.table)
 library(randomForest)
 ```
 
-Step 1: Load, process and clean the data
+###Step 1: Data processing: turn categorical variables into numeric variables
+
+The process is showed in DOC file: data_processing.Rmd and data_processing_uniquea_same.Rmd and the results are in Output links (Since the limit size of file is 25MB)
+
+In the data processing step, we converted all values of features into numeric values, and get the results : train_num. The code is in /doc/data_processing.Rmd
+
+Since many features are categorical variables, in order to avoid the dummy variable trap, we set all frequency =1 character values in one column to be same numeric values. The code is in /doc/data_processing_uniquea_same.Rmd
 ```{r}
 train_num<- fread("../output/train_num.csv") %>% as.data.frame()
-test_num<- fread("../output/test_num.csv") %>% as.data.frame()
 train_num_runique<- fread("../output/train_num_runique.csv") %>% as.data.frame()
-test_num<- fread("../output/test_num_runique.csv") %>% as.data.frame()
-
-
-test = fread("/home/vassily/Desktop/Link to Fall 2017/Applied Data Science/fall2017-project5-proj5-grp3/data/act_test.csv") %>% as.data.frame()
-train = fread("/home/vassily/Desktop/Link to Fall 2017/Applied Data Science/fall2017-project5-proj5-grp3/data/act_train.csv") %>% as.data.frame()
-people = fread("/home/vassily/Desktop/Link to Fall 2017/Applied Data Science/fall2017-project5-proj5-grp3/data/people.csv") %>% as.data.frame()
-
-names(people)[2:length(names(people))]=paste0('people_',names(people)[2:length(names(people))])
-p_logi <- names(people)[which(sapply(people, is.logical))]
-for (col in p_logi) {
-  set(people, j = col, value = as.numeric(people[[col]]))
-}
-train_agg <- merge(train, people, by = "people_id", all.x = T)
-
-
 ```
 
-Step 2: Implement models
+###Step 2: Implement models
 
-Model 1: SVM
+###Model 1: SVM
 ```{r}
 # Linear SVM
 source("/Users/yg2477/Desktop/fall2017-project5-proj5-grp3-master/lib/svm_linear.R")
@@ -60,158 +52,63 @@ source("/Users/yg2477/Desktop/fall2017-project5-proj5-grp3-master/lib/svm_rbf.R"
 
 We can find the accuracy of linear svm is 83.09%, while the RBF Kernel behaves even better, the accuracy is 88.22%.
 
-Model 2: Multinomial Log-Linear Model
+###Model 2: Multinomial Log-Linear Model
 ```{r}
 
 ```
 
-Model 3: Random Forest
+###Model 3: Random Forest
 ```{r}
-
-  library(randomForest)
-
-  train_num = train_num[, !names(train_num) %in% c("V1")]
-  length(train_num)
-  fit <- randomForest(as.factor(outcome)~., data= train_num, mtry=8,
-                      importance=TRUE, 
-                      ntree=25)
-  
+ 
 ```
 
-Model 4: Light GBM
+###Model 4: Light GBM
+```{r, warning=FALSE}
+# Data Pre-processing, separation into two data set for group activity =1 and group_activity !=1
+source("../lib/lightGBM.R")
+#lightGBM(train_num_runique)
+```
+
+Pre-processing: We first pre-process the file separating the data set into two part, one corresponding to activity_group=1 and the other one corresponding to activity_group!=1.
+
+Results:
+
+We run the Light GBM model on the first data set: activity =1 with the following parameter: max_depth = 8, learning_rate=0.1, 1500 iterations We obtain the following accuracy: train's l2: 0.0165753 valid's l2: 0.0187008, so an accuracy of 98.13% on the test set We run the code in 2.93 mins.
+
+We then run the Light GBM model on the second data set: activity !=1 with the following parameter: max_depth = 8, learning_rate=0.1, 1500 iterations We obtain the following accuracy: train's l2:0.0264289 valid's l2:0.0285721, so an accuracy of 97.15% on the test set We run the code in 7.04 mins.
+
+###Model 5: Xgboost
 ```{r}
-DT2mat <- function(DT, low_mem = FALSE, collect = 0, silent = TRUE) {
-  
-  # Can't initialize lower
-  mat_sub <- matrix(rep(FALSE, nrow(DT) * ncol(DT)), ncol = ncol(DT))
-  
-  cols <- copy(colnames(DT))
-  colnames(mat_sub) <- cols
-  
-  if (collect == 0) {
-    # Don't garbage collect
-    
-    if (low_mem == TRUE) {
-      # delete old
-      for (i in cols) {
-        mat_sub[, which(cols %in% i)] <- copy(DT[[i]])
-        set(DT, j = i, value = NULL)
-      }
-      
-    } else {
-      # not low mem
-      for (i in cols) {
-        mat_sub[, which(cols %in% i)] <- copy(DT[[i]])
-      }
-      
-    }
-    
-  } else {
-    # Do garbage collect
-    
-    if (silent == FALSE) {
-      # not silent
-      
-      if (low_mem == TRUE) {
-        # delete old
-        j <- 1
-        for (i in cols) {
-          j <- j + 1
-          mat_sub[, which(cols %in% i)] <- copy(DT[[i]])
-          set(DT, j = i, value = NULL)
-          if (!(j %% collect)) {gc(verbose = FALSE); cat("\rIteration: ", j, ".", sep = "")}
-        }
-        
-      } else {
-        # not low mem
-        j <- 0
-        for (i in cols) {
-          j <- j + 1
-          mat_sub[, which(cols %in% i)] <- copy(DT[[i]])
-          if (!(j %% collect)) {gc(verbose = FALSE); cat("\rIteration: ", j, ".", sep = "")}
-        }
-        
-      }
-      
-    } else {
-      
-      if (low_mem == TRUE) {
-        # delete old
-        j <- 1
-        for (i in cols) {
-          j <- j + 1
-          mat_sub[, which(cols %in% i)] <- copy(DT[[i]])
-          set(DT, j = i, value = NULL)
-          if (!(j %% collect)) {gc(verbose = FALSE)}
-        }
-        
-      } else {
-        # not fast
-        j <- 0
-        for (i in cols) {
-          j <- j + 1
-          mat_sub[, which(cols %in% i)] <- copy(DT[[i]])
-          if (!(j %% collect)) {gc(verbose = FALSE)}
-        }
-        
-      }
-      
-    }
-  }
-  
-  return(mat_sub)
-  
+source("/Users/linhan/Desktop/fall2017-project5-proj5-grp3/lib/xgboost.R")
+```
+
+In order to make computation more efficient, we converted all non-sparse columns to sparse matrix and rbind them with other sparse columns.
+
+In xgboost model, I trained the model using different parameters combinations like size of each boosting step of 0.02,0.05,0.1 and maximum depth of the tree of 5,10,15. I find that when eta= 0.02, max_depth=10, the model have the highest accuracy. So I used it as the best model to do the following step---(5 folds cross-validation), and get the results:
+```{r, warning=FALSE}
+run.xgb<- TRUE
+if(run.xgb){
+ system.time(xgb(train_num_runique, K=5))
 }
+####Results:
+# [100]	train-auc:0.990005+0.000024	test-auc:0.989440+0.000104 
+#     user   system  elapsed 
+#  591.506  510.861 1357.692 
 ```
 
-```{r}
+From the results, we can see that the accuracy of Xgboost model is 98.94%. The running time is 1357.69 seconds.
 
+###Model 6: Neural Network
 
+The multiple-layer neural network codes is in /doc/neural_network.ipynb. We use 5 folds cross-validation to do evaluation.
+The results are as following:
 
+CV Score         hidden layer        running time
 
-#manual treatment:
-train_num$people_id <- as.numeric(as.factor(train_num$people_id)) - 1
-train_num$activity_id <- as.numeric(as.factor(train_num$activity_id)) - 1
-train_num$date <- as.numeric(as.factor(train_num$date)) - 1
-train_num$people_date <- as.numeric(as.factor(train_num$people_date)) - 1
-train_num = train_num[, !names(train_num) %in% c("V1")]
-train_num_data= train_num[, !names(train_num) %in% c("outcome")]
+75.57%                1                 148.94s
 
-#automated treatment
-rules <- lgb.prepare_rules(data = train_agg)
-data_train <- bank_rules$data
+82.03%                6                 354.62s
 
+80.56%                10                1639.65s
 
-temp_train <- lgb.Dataset(DT2mat(train_num_data), label=train_num$outcome, free_raw_data = FALSE, colnames = colnames(train_num_data), categorical_feature = c(1, 2, 3, 18))
-
-bst <- lightgbm(data = temp_train,
-                num_leaves = 4,
-                learning_rate = 1,
-                nrounds = 2,
-                objective = "binary")
-
-pred <- predict(bst, DT2mat(train_num_data))
-err <- mean(as.numeric(pred > 0.5) != train_num$outcome)
-print(paste("test-error=", err))
-
-
-print("Training lightgbm with lgb.Dataset")
-dtrain <- lgb.Dataset(data = test_num[, !names(test_num) %in% c("V1", "outcome")],
-                      label = test_num$outcome)
-bst <- lightgbm(data = dtrain,
-                num_leaves = 4,
-                learning_rate = 1,
-                nrounds = 2,
-objective = "binary")
-
-bst <- lightgbm(data = as.matrix(train_num$data),
-                label = train$label,
-                num_leaves = 4,
-                learning_rate = 1,
-                nrounds = 2,
-objective = "binary")
-```
-
-Model 5: Xgboost
-
-Model 6: Neural Network
+83.72%                15                4380.30s
