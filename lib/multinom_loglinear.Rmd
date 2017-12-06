@@ -1,0 +1,60 @@
+---
+title: "multinom log linear"
+author: "Enrique Olivo eco2121"
+date: "December 6, 2017"
+output: pdf_document
+---
+
+
+##READ IN DATA + DIVIDE INTO TRAIN/TEST
+
+```{r setup, include=FALSE}
+
+setwd("~/Project 5")
+
+data <- read.csv("train_num.csv")
+
+#subset to relevant variables #unfortunately, multinom() cannot handle more than 1024 categories of a variable 
+data <- subset(data,select=-c(X,people_id,activity_id,date,people_date))
+
+#split into train and test 
+index <- sample(1:nrow(data2), size=0.7*nrow(data2)) 
+train_data <- data[index,] 
+test_data <- data[-index,]
+
+```
+
+##Train a model
+
+```{r}
+library(nnet)
+
+multinom_train <- function(train_data){
+  multinom_fit <- multinom(formula = as.factor(outcome) ~ .,
+                           data=train_data, MaxNWts = 10000, maxit = 500)
+  top_models = varImp(multinom_fit)
+  top_models$variables = row.names(top_models)
+  top_models = top_models[order(-top_models$Overall),]
+  return(list(fit=multinom_fit, top=top_models))
+}
+
+#run it, and also obtain the system time
+system.time(multinomfit_train <- multinom_train(train_data))
+```
+
+##Test the model
+```{r}
+#test function
+multinom_test <- function(test_data, fit){
+  multinom_pred = predict(fit,newdata=test_data)
+  return(multinom_pred)
+}
+
+# run it:
+multinomtest_result = multinom_test(test_data,multinomfit_train$fit)
+postResample(test_data$outcome,multinomtest_result)
+# Accuracy     Kappa 
+#0.8333296 0.6704241 
+
+```
+
