@@ -16,9 +16,9 @@ Lin Han(lh2810): data processing, xgboost model, neural network model, PCA, main
 
 Yajie Guo(yg2477): linear svm model, RBF kernel model, main file, readme writeup
 
-Vassily Carantino(vc2434): Light GBM model
+Vassily Carantino(vc2434): Light GBM model, Random Forest (+pre-processing), main file, Power Point Presentation
 
-Enrique Olivo(eco2121): multinomial log linear model
+Enrique Olivo(eco2121): Multinomial log linear model, Presenter
 
 	
 **Contribution statement**: ([default](doc/a_note_on_contributions.md)) All team members contributed equally in all stages of this project. All team members approve our work presented in this GitHub repository including this contributions statement. 
