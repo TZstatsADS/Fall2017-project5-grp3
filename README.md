@@ -9,16 +9,16 @@ Term: Fall 2017
 	+ Yajie Guo(yg2477)
 	+ Vassily Carantino(vc2434)
 	+ Enrique Olivo(eco2121)
-+ Project summary: In this project, we conducted a couple of machine learning algorithms on Red Hat Business data set, which is pretty large(almost two millions*56). We mainly compared Linear SVM, logistic Regression, Random Forest, GBM, Light GBM, Xgboost, Neural Network. And it proved Xgoost has the highest accuracy around 98%. Since the accuracy is pretty high, we used feature selection, such as Feature Importance, PCA, to exclude the possibility of overfitting or dummy variable traps. After all these tests, we concluded that Xgoost should be regarded as the optimal model.
++ Project summary: In this project, we conducted a couple of machine learning algorithms on Red Hat Business data set, which is pretty large(almost two millions*56). We mainly compared SVM(linear and nonlinear), Random Forest, Light GBM, Xgboost, Neural Network, Multinomial log-linear Model. And it proved Xgoost and Light GBM have the highest accuracy around 98%.
 + Contribution
 
 Lin Han(lh2810): data processing, xgboost model, neural network model, PCA, main file
 
-Yajie Guo(yg2477): svm model, main file
+Yajie Guo(yg2477): linear svm model, RBF kernel model, main file, readme writeup
 
 Vassily Carantino(vc2434): Light GBM model
 
-Enrique Olivo(eco2121): Logistic Model, GBM model
+Enrique Olivo(eco2121): multinomial log linear model
 
 	
 **Contribution statement**: ([default](doc/a_note_on_contributions.md)) All team members contributed equally in all stages of this project. All team members approve our work presented in this GitHub repository including this contributions statement. 
