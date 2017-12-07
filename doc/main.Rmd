@@ -89,7 +89,7 @@ multinom_test <- function(multinom_test_data, fit){
   return(multinom_pred)
 }
 
-# run it:
+Run it:
 multinomtest_result = multinom_test(multinom_test_data,multinomfit_train$fit)
 postResample(multinom_test_data$outcome,multinomtest_result)
 
