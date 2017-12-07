@@ -1,6 +1,7 @@
 ---
 title: "Main Notebook"
 output: html_notebook
+author: group3
 ---
 
 In this project, we conducted a couple of machine learning algorithms on Red Hat Business data set, which is pretty large(almost two millions*56). We mainly compared SVM(linear and nonlinear), Random Forest, Light GBM, Xgboost, Neural Network, Multinomial log-linear Model. And it proved Xgoost and Light GBM have the highest accuracy around 98%.
