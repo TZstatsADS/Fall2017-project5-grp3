@@ -53,9 +53,49 @@ source("../lib/svm_rbf.R")
 
 We can find the accuracy of linear svm is 83.09%, while the RBF Kernel behaves even better, the accuracy is 88.22%.
 
+###Model2: Multinomial Log Linear
+
+library(nnet)
+multinom_data <- train_num
 
 
-###Model 2: Random Forest
+#SUBSET TO RELEVANT VARIABLES
+#unfortunately, multinom() cannot handle more than 1024 categories of a variable 
+multinom_data <- subset(data,select=-c(X,people_id,activity_id,date,people_date))
+
+
+#SPLIT INTO TRAIN AND TEST
+set.seed(2017)
+multinom_index <- sample(1:nrow(multinom_data), size=0.7*nrow(multinom_data)) 
+multinom_train_data <- multinom_data[index,] 
+multinom_test_data <- multinom_data[-index,]
+
+
+#TRAIN THE MODEL + OBTAIN RUN TIME
+multinom_train <- function(multinom_train_data){
+  multinom_fit <- multinom(formula = as.factor(outcome) ~ .,
+                           data=multinom_train_data, MaxNWts = 10000, maxit = 500)
+  top_models = varImp(multinom_fit)
+  top_models$variables = row.names(top_models)
+  top_models = top_models[order(-top_models$Overall),]
+  return(list(fit=multinom_fit, top=top_models))
+}
+system.time(multinomfit_train <- multinom_train(train_data))
+
+
+#TEST THE MODEL
+multinom_test <- function(multinom_test_data, fit){
+  multinom_pred = predict(fit,newdata=multinom_test_data)
+  return(multinom_pred)
+}
+
+# run it:
+multinomtest_result = multinom_test(multinom_test_data,multinomfit_train$fit)
+postResample(multinom_test_data$outcome,multinomtest_result)
+
+
+
+###Model 3: Random Forest
 
 We need to do some pre-processing before using the Random Forest Model. Indeed, all the variables that we use in this model are categorical variables except ‘people date’ and ‘activity date’. RF implementation in R cannot deal with categorical variables if some variables have more than 52 different labels.
 
@@ -76,7 +116,9 @@ Model: We run a Random Forest model with parameter mtrt=sqrt(44) and pruning (im
 #ntree=25)
 ```
 
-###Model 3: Light GBM
+
+
+###Model 4: Light GBM
 
 Pre-processing: We first pre-process the file separating the data set into two part, one corresponding to activity_group=1 and the other one corresponding to activity_group!=1.
 
@@ -92,7 +134,7 @@ We run the Light GBM model on the first data set: activity =1 with the following
 
 We then run the Light GBM model on the second data set: activity !=1 with the following parameter: max_depth = 8, learning_rate=0.1, 1500 iterations We obtain the following accuracy: train's l2:0.0264289 valid's l2:0.0285721, so an accuracy of 97.15% on the test set We run the code in 7.04 mins.
 
-###Model 4: Xgboost
+###Model 5: Xgboost
 
 ```{r}
 source("/Users/linhan/Desktop/fall2017-project5-proj5-grp3/lib/xgboost.R")
@@ -114,7 +156,7 @@ if(run.xgb){
 
 From the results, we can see that the accuracy of Xgboost model is 98.94%. The running time is 1357.69 seconds.
 
-###Model 5: Neural Network
+###Model 6: Neural Network
 
 The multiple-layer neural network codes is in /doc/neural_network.ipynb. We use 5 folds cross-validation to do evaluation.
 The results are as following:
