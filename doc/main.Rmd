@@ -55,8 +55,26 @@ We can find the accuracy of linear svm is 83.09%, while the RBF Kernel behaves e
 
 
 ###Model 2: Random Forest
+
+We need to do some pre-processing before using the Random Forest Model. Indeed, all the variables that we use in this model are categorical
+variables except ‘people date’ and ‘activity date’. RF implementation in R cannot deal with categorical variables if some variables have more than
+52 different labels.
+Pre-processing: For this model we decided to separate ‘activitygroup’=1 with ‘activity_group’!=1, since these activities in these two groups of
+categories doesn’t have the same the same variables (variables for which ‘activity group’=1 has 9 additional variables). We also decided to
+tranform variables with more than 52 labels into numeric values.
+Model: We run a Random Forest model with parameter mtrt=sqrt(44) and pruning (importance=TRUE) for bothe activity1 and without_activity1
 ```{r}
- 
+#trainingIndex=sample(nrow(thisdata), round((nrow(thisdata)*0.40)))
+#data.test=thisdata[-trainingIndex,]
+#data.train=thisdata[trainingIndex,]
+#rf.model = randomForest(as.factor(outcome)~., data=thisdata, subset= trainingIndex, mtry =7, importance=TRUE)
+#importance(rf.model)
+#list(rf.model, data.test,trainingIndex)
+#train_num = train_num[, !names(train_num) %in% c("V1")]
+#length(train_num)
+#fit <- randomForest(as.factor(outcome)~., data= train_num, mtry=8,
+#importance=TRUE,
+#ntree=25)
 ```
 
 ###Model 3: Light GBM
