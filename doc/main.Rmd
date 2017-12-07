@@ -43,11 +43,11 @@ train_num_runique<- fread("../output/train_num_runique.csv") %>% as.data.frame()
 ###Model 1: SVM
 ```{r}
 # Linear SVM
-source("/Users/yg2477/Desktop/fall2017-project5-proj5-grp3-master/lib/svm_linear.R")
+source("../lib/svm_linear.R")
 # svm_linear(train_num_runique, 5)
 
 #RBF Kernel
-source("/Users/yg2477/Desktop/fall2017-project5-proj5-grp3-master/lib/svm_rbf.R")
+source("../lib/svm_rbf.R")
 #svm_rbf(train_num_runique, 5)
 ```
 
@@ -77,13 +77,14 @@ Model: We run a Random Forest model with parameter mtrt=sqrt(44) and pruning (im
 ```
 
 ###Model 3: Light GBM
+
+Pre-processing: We first pre-process the file separating the data set into two part, one corresponding to activity_group=1 and the other one corresponding to activity_group!=1.
+
 ```{r, warning=FALSE}
 # Data Pre-processing, separation into two data set for group activity =1 and group_activity !=1
 source("../lib/lightGBM.R")
 #lightGBM(train_num_runique)
 ```
-
-Pre-processing: We first pre-process the file separating the data set into two part, one corresponding to activity_group=1 and the other one corresponding to activity_group!=1.
 
 Results:
 
@@ -92,6 +93,7 @@ We run the Light GBM model on the first data set: activity =1 with the following
 We then run the Light GBM model on the second data set: activity !=1 with the following parameter: max_depth = 8, learning_rate=0.1, 1500 iterations We obtain the following accuracy: train's l2:0.0264289 valid's l2:0.0285721, so an accuracy of 97.15% on the test set We run the code in 7.04 mins.
 
 ###Model 4: Xgboost
+
 ```{r}
 source("/Users/linhan/Desktop/fall2017-project5-proj5-grp3/lib/xgboost.R")
 ```
