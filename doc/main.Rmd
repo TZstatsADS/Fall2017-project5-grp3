@@ -52,17 +52,14 @@ source("/Users/yg2477/Desktop/fall2017-project5-proj5-grp3-master/lib/svm_rbf.R"
 
 We can find the accuracy of linear svm is 83.09%, while the RBF Kernel behaves even better, the accuracy is 88.22%.
 
-###Model 2: Multinomial Log-Linear Model
-```{r}
 
-```
 
-###Model 3: Random Forest
+###Model 2: Random Forest
 ```{r}
  
 ```
 
-###Model 4: Light GBM
+###Model 3: Light GBM
 ```{r, warning=FALSE}
 # Data Pre-processing, separation into two data set for group activity =1 and group_activity !=1
 source("../lib/lightGBM.R")
@@ -77,7 +74,7 @@ We run the Light GBM model on the first data set: activity =1 with the following
 
 We then run the Light GBM model on the second data set: activity !=1 with the following parameter: max_depth = 8, learning_rate=0.1, 1500 iterations We obtain the following accuracy: train's l2:0.0264289 valid's l2:0.0285721, so an accuracy of 97.15% on the test set We run the code in 7.04 mins.
 
-###Model 5: Xgboost
+###Model 4: Xgboost
 ```{r}
 source("/Users/linhan/Desktop/fall2017-project5-proj5-grp3/lib/xgboost.R")
 ```
@@ -98,7 +95,7 @@ if(run.xgb){
 
 From the results, we can see that the accuracy of Xgboost model is 98.94%. The running time is 1357.69 seconds.
 
-###Model 6: Neural Network
+###Model 5: Neural Network
 
 The multiple-layer neural network codes is in /doc/neural_network.ipynb. We use 5 folds cross-validation to do evaluation.
 The results are as following:
